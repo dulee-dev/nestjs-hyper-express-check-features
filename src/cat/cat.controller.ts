@@ -1,10 +1,16 @@
-import { Controller, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { TypedBody, TypedParam, TypedQuery, TypedRoute } from '@nestia/core';
 import { FindAllQuery } from './dtos/find-all.dto';
 import { CAT_DB } from './cat.db';
-import { UpdateOneBody } from './dtos/create-one.dto';
+import { UpdateOneBody } from './dtos/update-one.dto';
 import { Cat } from './cat.entity';
-import { CreateOneBody } from './dtos/update-one.dto';
+import { CreateOneBody } from './dtos/create-one.dto';
 
 @Controller('/cat')
 export class CatController {
@@ -34,8 +40,9 @@ export class CatController {
     };
   }
 
-  @TypedRoute.Post()
-  createOne(@TypedBody() body: CreateOneBody) {
+  @Post()
+  createOne(@Body() body: CreateOneBody) {
+    console.log(body);
     const id = '018d3d15-8dc7-77ed-93ef-76cf42a291c9';
     const cat: Cat = {
       id,
@@ -45,6 +52,18 @@ export class CatController {
       data: { cat: cat },
     };
   }
+
+  // @TypedRoute.Post()
+  // createOne(@TypedBody() body: CreateOneBody) {
+  //   const id = '018d3d15-8dc7-77ed-93ef-76cf42a291c9';
+  //   const cat: Cat = {
+  //     id,
+  //     ...body,
+  //   };
+  //   return {
+  //     data: { cat: cat },
+  //   };
+  // }
 
   @TypedRoute.Patch('/:id')
   updateOne(@TypedBody() body: UpdateOneBody, @TypedParam('id') id: string) {

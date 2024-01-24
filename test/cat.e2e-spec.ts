@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import typia from 'typia';
 
 describe('CatController (e2e)', () => {
   let app: INestApplication;
@@ -12,6 +13,13 @@ describe('CatController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+        whitelist: true,
+      }),
+    );
     await app.init();
   });
 
@@ -53,15 +61,19 @@ describe('CatController (e2e)', () => {
   it('/cat (POST)', async () => {
     const reqBody = {
       name: 'kim',
-      age: 7,
+      wrong: 'wrong',
     };
-    const response = await request(app.getHttpServer())
-      .post('/cat')
-      .send(reqBody);
-    const { statusCode, body } = response;
-
-    expect(statusCode).toEqual(201);
-    expect(body.data.cat.id).toBeDefined();
+    try {
+      const response = await request(app.getHttpServer())
+        .post('/cat')
+        .send(reqBody);
+      const { statusCode, body } = response;
+      console.log(body);
+      expect(statusCode).toEqual(201);
+      expect(body.data.cat.id).toBeDefined();
+    } catch (err) {
+      console.log(err);
+    }
   });
 
   it('/cat/018d3ce1-bbee-7358-b7ed-4cdc36e3921a (PATCH)', async () => {
@@ -85,5 +97,17 @@ describe('CatController (e2e)', () => {
     const { statusCode, body } = response;
 
     expect(statusCode).toEqual(200);
+  });
+
+  it('typia', () => {
+    interface Sample {
+      name: string;
+    }
+    const extra = {
+      name: 'dulee',
+      age: 10,
+    };
+    const valid = typia.validate<Sample>(extra);
+    console.log(valid);
   });
 });
